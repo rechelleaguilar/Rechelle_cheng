@@ -80,21 +80,21 @@
         </div>
       </div>
 
-      <div class="flex items-center gap-2 w-full md:w-auto">
-        <div class="relative flex-grow md:flex-none">
-          <span class="absolute left-3 top-2.5 text-slate-500">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-            </svg>
-          </span>
-          <input
-            id="apiKeyInput"
-            type="password"
-            placeholder="Optional: Gemini API Key Override"
-            class="w-full md:w-64 bg-slate-900 border border-slate-800 pl-9 pr-4 py-2 text-xs rounded-lg text-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 placeholder-slate-600 transition"
-          />
-        </div>
+      <!-- API Key Status and Quick Manager in Header -->
+      <div class="flex items-center gap-2.5 w-full md:w-auto">
+        <button
+          onclick="openApiKeyModal()"
+          id="headerApiKeyBadge"
+          class="flex items-center gap-2 px-3 py-1.5 rounded-lg border text-xs font-medium transition bg-slate-900 border-slate-800 text-slate-300 hover:border-slate-700 hover:bg-slate-850 shadow-sm"
+          title="Configure Google Gemini API Key"
+        >
+          <span id="headerApiKeyStatusDot" class="w-2 h-2 rounded-full bg-amber-400"></span>
+          <span id="headerApiKeyLabel">Set Gemini API Key</span>
+          <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path>
+          </svg>
+        </button>
+
         <div class="group relative">
           <button class="text-slate-500 hover:text-indigo-400 p-1 transition" title="Help information">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -102,7 +102,7 @@
             </svg>
           </button>
           <div class="pointer-events-none absolute right-0 top-8 w-72 bg-slate-950 border border-slate-800 rounded-lg p-3 text-xs text-slate-400 opacity-0 group-hover:opacity-100 transition shadow-2xl z-50">
-            Leave key blank to use runner credentials default, or paste your personal <span class="text-white font-medium">Gemini API Key</span>.
+            A <span class="text-white font-medium">Google Gemini API Key</span> is used to generate deep functional and negative test cases from requirements.
           </div>
         </div>
       </div>
@@ -174,7 +174,7 @@
             <div class="flex items-center gap-1.5">
               <button
                 id="structureAiBtn"
-                onclick="structureRequirementsAI()"
+                onclick="triggerStructureRequirementsAI()"
                 class="bg-indigo-950/80 hover:bg-indigo-900 text-indigo-300 border border-indigo-800/80 text-3xs px-2.5 py-1 rounded-md font-semibold transition flex items-center gap-1 shadow-sm"
                 title="Format existing text into 1. Use Case, 2. User Story, 3. Scenario, 4. AC"
               >
@@ -285,7 +285,7 @@
         <!-- Generate CTA -->
         <button
           id="generateBtn"
-          onclick="generateTestCasesAI()"
+          onclick="triggerGenerateTestCasesAI()"
           class="w-full py-3 rounded-xl font-semibold text-sm transition flex items-center justify-center gap-2 border shadow-lg bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white border-indigo-500 hover:shadow-indigo-500/10"
         >
           <svg class="w-4 h-4 text-indigo-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -491,6 +491,90 @@
     </section>
 
   </main>
+
+  <!-- Interactive AI API Key Prompt Modal -->
+  <div id="apiKeyModal" class="hidden fixed inset-0 bg-slate-950/85 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-5">
+      
+      <div class="flex items-start justify-between">
+        <div class="flex items-center gap-3">
+          <div class="p-2.5 bg-indigo-600/20 text-indigo-400 rounded-xl border border-indigo-500/30">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path>
+            </svg>
+          </div>
+          <div>
+            <h3 class="text-base font-bold text-slate-200">Google Gemini API Key</h3>
+            <p class="text-3xs text-slate-400">Required for AI Analysis & Test Case Generation</p>
+          </div>
+        </div>
+        <button onclick="closeApiKeyModal()" class="text-slate-500 hover:text-white p-1">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+
+      <div class="space-y-3 text-xs">
+        <p class="text-slate-300 leading-relaxed text-2xs">
+          Enter your <span class="text-white font-semibold">Gemini API Key</span> to enable requirement breakdown and test case generation. Your key is saved locally in your browser session.
+        </p>
+
+        <div class="space-y-1">
+          <label class="text-3xs text-slate-400 font-bold uppercase tracking-wider">Gemini API Key</label>
+          <div class="relative">
+            <input
+              type="password"
+              id="modalApiKeyInput"
+              placeholder="AIzaSy..."
+              class="w-full bg-slate-950 border border-slate-800 rounded-lg pl-3 pr-10 py-2.5 text-xs text-slate-200 font-mono focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
+            <button
+              type="button"
+              onclick="toggleApiKeyVisibility()"
+              class="absolute right-2.5 top-2.5 text-slate-500 hover:text-slate-300 p-0.5"
+              title="Show/Hide Key"
+            >
+              <svg id="eyeIcon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="bg-indigo-950/40 border border-indigo-800/40 rounded-lg p-3 text-3xs text-indigo-300 flex items-start gap-2">
+          <span class="text-indigo-400">💡</span>
+          <div>
+            <span>Need an API Key? Get one free from Google AI Studio.</span>
+            <div class="mt-1">
+              <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" class="text-indigo-400 underline font-semibold hover:text-indigo-300">
+                Get API Key from Google AI Studio &rarr;
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-800 text-2xs font-semibold">
+        <button
+          type="button"
+          onclick="closeApiKeyModal()"
+          class="bg-slate-950 text-slate-400 hover:text-white border border-slate-800 py-2 px-4 rounded-lg transition"
+        >
+          Cancel
+        </button>
+        <button
+          type="button"
+          onclick="saveApiKeyFromModal()"
+          class="bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white py-2 px-5 rounded-lg transition shadow-md shadow-indigo-950"
+        >
+          Save & Continue
+        </button>
+      </div>
+
+    </div>
+  </div>
 
   <!-- Delete Confirmation Modal -->
   <div id="deleteModal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
@@ -789,6 +873,7 @@
     let modalMode = 'create';
     let editingCaseId = null;
     let deleteConfirmTarget = null;
+    let pendingAiAction = null;
     let toastTimeout = null;
 
     // Initialize Application
@@ -805,19 +890,76 @@
         testCases = INITIAL_TEST_CASES;
       }
 
-      const savedKey = localStorage.getItem('apex_api_key');
-      if (savedKey) {
-        document.getElementById('apiKeyInput').value = savedKey;
-      }
-
-      document.getElementById('apiKeyInput').addEventListener('input', (e) => {
-        localStorage.setItem('apex_api_key', e.target.value);
-      });
-
-      // Default load SOA
+      updateApiKeyUI();
       loadTemplate('soa');
       renderTestCases();
     };
+
+    function getApiKey() {
+      return localStorage.getItem('apex_api_key') || "";
+    }
+
+    function updateApiKeyUI() {
+      const currentKey = getApiKey();
+      const dot = document.getElementById('headerApiKeyStatusDot');
+      const label = document.getElementById('headerApiKeyLabel');
+      const badge = document.getElementById('headerApiKeyBadge');
+
+      if (currentKey && currentKey.trim().length > 0) {
+        dot.className = "w-2 h-2 rounded-full bg-emerald-400";
+        label.innerText = "Gemini Key: Active";
+        badge.className = "flex items-center gap-2 px-3 py-1.5 rounded-lg border text-xs font-medium transition bg-emerald-950/40 border-emerald-800 text-emerald-300 hover:bg-emerald-900/40 shadow-sm";
+      } else {
+        dot.className = "w-2 h-2 rounded-full bg-amber-400 animate-pulse";
+        label.innerText = "Set Gemini API Key";
+        badge.className = "flex items-center gap-2 px-3 py-1.5 rounded-lg border text-xs font-medium transition bg-slate-900 border-slate-800 text-slate-300 hover:border-slate-700 hover:bg-slate-850 shadow-sm";
+      }
+    }
+
+    function openApiKeyModal(onSuccessCallback = null) {
+      pendingAiAction = onSuccessCallback;
+      const modal = document.getElementById('apiKeyModal');
+      const input = document.getElementById('modalApiKeyInput');
+      input.value = getApiKey();
+      modal.classList.remove('hidden');
+      setTimeout(() => input.focus(), 50);
+    }
+
+    function closeApiKeyModal() {
+      document.getElementById('apiKeyModal').classList.add('hidden');
+      pendingAiAction = null;
+    }
+
+    function saveApiKeyFromModal() {
+      const input = document.getElementById('modalApiKeyInput');
+      const keyVal = input.value.trim();
+
+      if (!keyVal) {
+        showToast("Please enter a valid Gemini API Key.", true);
+        return;
+      }
+
+      localStorage.setItem('apex_api_key', keyVal);
+      updateApiKeyUI();
+      document.getElementById('apiKeyModal').classList.add('hidden');
+      showToast("Gemini API Key saved successfully!");
+
+      // Execute queued action if any
+      if (typeof pendingAiAction === 'function') {
+        const action = pendingAiAction;
+        pendingAiAction = null;
+        action();
+      }
+    }
+
+    function toggleApiKeyVisibility() {
+      const input = document.getElementById('modalApiKeyInput');
+      if (input.type === 'password') {
+        input.type = 'text';
+      } else {
+        input.type = 'password';
+      }
+    }
 
     function saveTestCases() {
       try {
@@ -861,8 +1003,8 @@
         buttons.forEach(btn => {
           btn.className = "preset-btn text-3xs px-2.5 py-1.5 rounded-lg border transition font-medium flex items-center gap-1.5 bg-slate-900 text-slate-400 border-slate-800 hover:border-slate-700 hover:text-slate-200";
         });
-        if (event && event.target) {
-          event.target.className = "preset-btn text-3xs px-2.5 py-1.5 rounded-lg border transition font-medium flex items-center gap-1.5 bg-indigo-600 text-white border-indigo-500 shadow-md";
+        if (window.event && window.event.target) {
+          window.event.target.className = "preset-btn text-3xs px-2.5 py-1.5 rounded-lg border transition font-medium flex items-center gap-1.5 bg-indigo-600 text-white border-indigo-500 shadow-md";
         }
         showToast(`Loaded template: ${REQUIREMENT_TEMPLATES[key].title}`);
       }
@@ -885,6 +1027,25 @@
         btn.className = "text-3xs px-2 py-0.5 rounded-full border transition flex items-center gap-1 font-mono bg-slate-900 text-slate-500 border-slate-800";
         label.innerText = "Auto-Structure on Paste: OFF";
       }
+    }
+
+    // AI Trigger Wrappers with API Key Check
+    function triggerStructureRequirementsAI(customText = null) {
+      const currentKey = getApiKey();
+      if (!currentKey || currentKey.trim() === "") {
+        openApiKeyModal(() => structureRequirementsAI(customText));
+        return;
+      }
+      structureRequirementsAI(customText);
+    }
+
+    function triggerGenerateTestCasesAI() {
+      const currentKey = getApiKey();
+      if (!currentKey || currentKey.trim() === "") {
+        openApiKeyModal(() => generateTestCasesAI());
+        return;
+      }
+      generateTestCasesAI();
     }
 
     // Auto Structuring Logic
@@ -922,7 +1083,7 @@ CRITICAL RULES:
 - Output clean text with standard numbers. Do NOT wrap in markdown code blocks (\`\`\`) or include conversational text.`;
 
       const userPrompt = `Inputted requirements to break down into the 4 sections:\n\n${textInput}`;
-      const finalApiKey = document.getElementById('apiKeyInput').value || "";
+      const finalApiKey = getApiKey();
       const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${finalApiKey}`;
 
       const requestPayload = {
@@ -945,7 +1106,12 @@ CRITICAL RULES:
         showToast("Structured into: 1. USE CASE, 2. USER STORY, 3. SCENARIO, 4. AC!");
       } catch (err) {
         console.error(err);
-        showToast(`Auto-structuring failed: ${err.message}`, true);
+        if (err.message.includes("403") || err.message.includes("401") || err.message.includes("API key")) {
+          showToast(`Invalid API Key: ${err.message}`, true);
+          openApiKeyModal(() => structureRequirementsAI(customText));
+        } else {
+          showToast(`Auto-structuring failed: ${err.message}`, true);
+        }
       } finally {
         isStructuring = false;
         document.getElementById('structuringOverlay').classList.add('hidden');
@@ -966,7 +1132,7 @@ CRITICAL RULES:
           e.preventDefault();
           document.getElementById('reqTextArea').value = pastedData;
           updateCharCount();
-          structureRequirementsAI(pastedData);
+          triggerStructureRequirementsAI(pastedData);
         }
       }
     }
@@ -983,7 +1149,7 @@ CRITICAL RULES:
           updateCharCount();
           showToast(`Loaded document: ${file.name}`);
           if (autoStructureOnPaste) {
-            structureRequirementsAI(content);
+            triggerStructureRequirementsAI(content);
           }
         }
       };
@@ -1009,7 +1175,7 @@ CRITICAL RULES:
             updateCharCount();
             showToast(`Dropped document: ${file.name}`);
             if (autoStructureOnPaste) {
-              structureRequirementsAI(content);
+              triggerStructureRequirementsAI(content);
             }
           }
         };
@@ -1076,7 +1242,7 @@ JSON Schema:
 }`;
 
       const userPrompt = `Specification to analyze:\n\n${reqText}\n\nPlease generate exactly ${caseCount} detailed test cases covering both Positive and Negative scenarios starting sequentially from TC-${String(testCases.length + 1).padStart(3, '0')}.`;
-      const finalApiKey = document.getElementById('apiKeyInput').value || "";
+      const finalApiKey = getApiKey();
       const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${finalApiKey}`;
 
       const requestPayload = {
@@ -1144,7 +1310,12 @@ JSON Schema:
         }
       } catch (err) {
         console.error(err);
-        showToast(`Generation failed: ${err.message}`, true);
+        if (err.message.includes("403") || err.message.includes("401") || err.message.includes("API key")) {
+          showToast(`Invalid API Key: ${err.message}`, true);
+          openApiKeyModal(() => generateTestCasesAI());
+        } else {
+          showToast(`Generation failed: ${err.message}`, true);
+        }
       } finally {
         isGenerating = false;
         genBtn.disabled = false;
@@ -1582,7 +1753,6 @@ JSON Schema:
       const container = document.getElementById('formStepsContainer');
       if (container.querySelectorAll('.step-row').length > 1) {
         btn.closest('.step-row').remove();
-        // renumber
         container.querySelectorAll('.step-row').forEach((row, i) => {
           row.querySelector('span').innerText = `${i + 1}.`;
         });
