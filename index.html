@@ -129,7 +129,7 @@
             </h2>
           </div>
           <span class="bg-indigo-950 text-indigo-400 text-3xs px-2.5 py-0.5 rounded-full border border-indigo-800 font-semibold tracking-wide">
-            Gemini 2.5 Flash
+            Gemini 3.6 Flash
           </span>
         </div>
 
@@ -1084,7 +1084,7 @@ CRITICAL RULES:
 
       const userPrompt = `Inputted requirements to break down into the 4 sections:\n\n${textInput}`;
       const finalApiKey = getApiKey();
-      const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${finalApiKey}`;
+      const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${finalApiKey}`;
 
       const requestPayload = {
         contents: [{ parts: [{ text: userPrompt }] }],
@@ -1243,7 +1243,7 @@ JSON Schema:
 
       const userPrompt = `Specification to analyze:\n\n${reqText}\n\nPlease generate exactly ${caseCount} detailed test cases covering both Positive and Negative scenarios starting sequentially from TC-${String(testCases.length + 1).padStart(3, '0')}.`;
       const finalApiKey = getApiKey();
-      const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${finalApiKey}`;
+      const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${finalApiKey}`;
 
       const requestPayload = {
         contents: [{ parts: [{ text: userPrompt }] }],
@@ -1753,6 +1753,7 @@ JSON Schema:
       const container = document.getElementById('formStepsContainer');
       if (container.querySelectorAll('.step-row').length > 1) {
         btn.closest('.step-row').remove();
+        // renumber
         container.querySelectorAll('.step-row').forEach((row, i) => {
           row.querySelector('span').innerText = `${i + 1}.`;
         });
