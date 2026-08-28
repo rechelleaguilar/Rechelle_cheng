@@ -1,0 +1,1669 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ApexQA Suite - AI Test Case Creator & Execution Matrix</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontSize: {
+            '2xs': '0.6875rem',
+            '3xs': '0.625rem',
+          },
+          colors: {
+            slate: {
+              850: '#151f32',
+              950: '#070d19',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+    pre, code, textarea, input[type="text"].font-mono {
+      font-family: 'JetBrains Mono', monospace;
+    }
+    /* Custom Scrollbars */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #090d16;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #1e293b;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #334155;
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-slate-900 text-slate-100 flex flex-col font-sans selection:bg-indigo-500 selection:text-white">
+
+  <!-- Toast Notification Banner -->
+  <div id="toastNotification" class="fixed top-4 right-4 z-50 transform transition-all duration-300 opacity-0 pointer-events-none translate-y-[-10px] px-5 py-3 rounded-xl shadow-2xl flex items-center gap-3 border text-sm font-medium">
+    <span id="toastIcon"></span>
+    <span id="toastMsg"></span>
+  </div>
+
+  <!-- Header -->
+  <header class="border-b border-slate-800 bg-slate-950 px-6 py-4 sticky top-0 z-30 shadow-lg">
+    <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+      
+      <div class="flex items-center gap-3">
+        <div class="p-2.5 bg-gradient-to-tr from-indigo-600 to-violet-500 rounded-xl shadow-inner text-white flex items-center justify-center">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+          </svg>
+        </div>
+        <div>
+          <h1 class="text-xl font-bold tracking-tight bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent">
+            ApexQA Suite
+          </h1>
+          <p class="text-xs text-slate-400 font-medium tracking-wide">
+            AI Requirements Analyzer & Live Test Execution Matrix
+          </p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2 w-full md:w-auto">
+        <div class="relative flex-grow md:flex-none">
+          <span class="absolute left-3 top-2.5 text-slate-500">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+            </svg>
+          </span>
+          <input
+            id="apiKeyInput"
+            type="password"
+            placeholder="Optional: Gemini API Key Override"
+            class="w-full md:w-64 bg-slate-900 border border-slate-800 pl-9 pr-4 py-2 text-xs rounded-lg text-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 placeholder-slate-600 transition"
+          />
+        </div>
+        <div class="group relative">
+          <button class="text-slate-500 hover:text-indigo-400 p-1 transition" title="Help information">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+          </button>
+          <div class="pointer-events-none absolute right-0 top-8 w-72 bg-slate-950 border border-slate-800 rounded-lg p-3 text-xs text-slate-400 opacity-0 group-hover:opacity-100 transition shadow-2xl z-50">
+            Leave key blank to use runner credentials default, or paste your personal <span class="text-white font-medium">Gemini API Key</span>.
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="flex-grow p-4 lg:p-6 max-w-7xl w-full mx-auto grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+    <!-- Left Column: Requirements Input & AI Settings (5 Columns) -->
+    <section class="lg:col-span-5 flex flex-col gap-6">
+      
+      <div class="bg-slate-950 border border-slate-800 rounded-xl p-5 shadow-sm flex flex-col gap-4 relative overflow-hidden">
+        <div class="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 rounded-full blur-2xl pointer-events-none"></div>
+
+        <div class="flex items-center justify-between flex-wrap gap-2">
+          <div class="flex items-center gap-2">
+            <svg class="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path>
+            </svg>
+            <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-300">
+              Requirements Input
+            </h2>
+          </div>
+          <span class="bg-indigo-950 text-indigo-400 text-3xs px-2.5 py-0.5 rounded-full border border-indigo-800 font-semibold tracking-wide">
+            Gemini 2.5 Flash
+          </span>
+        </div>
+
+        <!-- Preload Scenarios Buttons -->
+        <div>
+          <p class="text-3xs text-slate-400 mb-2 font-semibold uppercase">Preload Scenarios & Presets:</p>
+          <div class="flex flex-wrap gap-1.5" id="templateButtonsGroup">
+            <button onclick="loadTemplate('soa')" class="preset-btn text-3xs px-2.5 py-1.5 rounded-lg border transition font-medium flex items-center gap-1.5 bg-indigo-600 text-white border-indigo-500 shadow-md">
+              Unconfirmed SOA
+            </button>
+            <button onclick="loadTemplate('auth')" class="preset-btn text-3xs px-2.5 py-1.5 rounded-lg border transition font-medium flex items-center gap-1.5 bg-slate-900 text-slate-400 border-slate-800 hover:border-slate-700 hover:text-slate-200">
+              MFA Auth
+            </button>
+            <button onclick="loadTemplate('cart')" class="preset-btn text-3xs px-2.5 py-1.5 rounded-lg border transition font-medium flex items-center gap-1.5 bg-slate-900 text-slate-400 border-slate-800 hover:border-slate-700 hover:text-slate-200">
+              Cart Checkout
+            </button>
+            <button onclick="loadTemplate('blank')" class="preset-btn text-3xs px-2.5 py-1.5 rounded-lg border transition font-medium flex items-center gap-1.5 bg-slate-900 text-slate-400 border-slate-800 hover:border-slate-700 hover:text-slate-200">
+              + Blank Structure
+            </button>
+          </div>
+        </div>
+
+        <!-- Specification Document Controls Bar -->
+        <div class="flex flex-col gap-1.5">
+          <div class="flex justify-between items-center flex-wrap gap-2">
+            <div class="flex items-center gap-2">
+              <label class="text-3xs text-slate-400 font-semibold uppercase tracking-wider">
+                Specification Document
+              </label>
+              
+              <button
+                id="toggleAutoStructureBtn"
+                onclick="toggleAutoStructure()"
+                class="text-3xs px-2 py-0.5 rounded-full border transition flex items-center gap-1 font-mono bg-indigo-950 text-indigo-300 border-indigo-700"
+                title="Toggle automatic structure on paste"
+              >
+                <span>⚡</span>
+                <span id="toggleAutoStructureLabel">Auto-Structure on Paste: ON</span>
+              </button>
+            </div>
+
+            <div class="flex items-center gap-1.5">
+              <button
+                id="structureAiBtn"
+                onclick="structureRequirementsAI()"
+                class="bg-indigo-950/80 hover:bg-indigo-900 text-indigo-300 border border-indigo-800/80 text-3xs px-2.5 py-1 rounded-md font-semibold transition flex items-center gap-1 shadow-sm"
+                title="Format existing text into 1. Use Case, 2. User Story, 3. Scenario, 4. AC"
+              >
+                <span>🪄</span>
+                <span>Structure (1-4)</span>
+              </button>
+
+              <label class="cursor-pointer bg-slate-900 hover:bg-slate-800 text-indigo-400 border border-slate-800 hover:border-slate-700 text-3xs px-2.5 py-1 rounded-md font-semibold transition flex items-center gap-1 shadow-sm">
+                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+                </svg>
+                Upload File
+                <input
+                  type="file"
+                  id="fileUploadInput"
+                  accept=".txt,.md,.markdown,.json,.csv,.doc,.docx"
+                  onchange="handleFileUpload(event)"
+                  class="hidden"
+                />
+              </label>
+            </div>
+          </div>
+
+          <!-- Requirements Textarea with Drag & Drop -->
+          <div 
+            id="dropZoneContainer"
+            ondragover="handleDragOver(event)"
+            ondrop="handleDrop(event)"
+            class="relative group"
+          >
+            <textarea
+              id="reqTextArea"
+              onpaste="handlePaste(event)"
+              oninput="updateCharCount()"
+              placeholder="Paste any requirement or user story here... When pasted, it will automatically be analyzed and broken down into:&#10;1. USE CASE&#10;2. USER STORY&#10;3. SCENARIO&#10;4. ACCEPTANCE CRITERIA (AC)"
+              class="w-full h-80 bg-slate-900 border border-slate-800 rounded-lg p-3 text-sm text-slate-200 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono transition resize-y leading-relaxed"
+            ></textarea>
+
+            <!-- Structuring Loading Overlay -->
+            <div id="structuringOverlay" class="hidden absolute inset-0 bg-slate-950/85 backdrop-blur-sm rounded-lg flex-col items-center justify-center gap-2.5 z-10 border border-indigo-500/30">
+              <div class="p-2.5 bg-indigo-600/20 rounded-xl text-indigo-400 animate-spin">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                </svg>
+              </div>
+              <p class="text-xs font-semibold text-slate-200">
+                Analyzing & Mapping Sequential Specification...
+              </p>
+              <p class="text-3xs font-mono text-indigo-400">
+                1. USE CASE • 2. USER STORY • 3. SCENARIO • 4. ACCEPTANCE CRITERIA (AC)
+              </p>
+            </div>
+          </div>
+
+          <div class="flex justify-between items-center text-3xs text-slate-500 font-mono px-1">
+            <span class="flex items-center gap-1">
+              ✓ Paste or drop any document to auto-format directly
+            </span>
+            <span id="charCountLabel">0 characters</span>
+          </div>
+        </div>
+
+        <!-- AI Generator Configuration -->
+        <div class="grid grid-cols-2 gap-3 pt-2 border-t border-slate-900">
+          <div class="flex flex-col gap-1">
+            <label class="text-3xs text-slate-400 font-semibold uppercase">Persona Profile</label>
+            <select
+              id="personaSelect"
+              class="bg-slate-900 border border-slate-800 rounded-lg py-1.5 px-2 text-2xs text-slate-300 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+            >
+              <option value="Principal QA Engineer">Principal QA Engineer</option>
+              <option value="Security Penetration Auditor">Security Specialist</option>
+              <option value="SRE & Resilience Architect">Resilience Architect</option>
+              <option value="Usability Auditor">A11y & UX Specialist</option>
+            </select>
+          </div>
+
+          <div class="flex flex-col gap-1">
+            <label class="text-3xs text-slate-400 font-semibold uppercase">Testing Strategy</label>
+            <select
+              id="focusStrategySelect"
+              class="bg-slate-900 border border-slate-800 rounded-lg py-1.5 px-2 text-2xs text-slate-300 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+            >
+              <option value="Balanced">Balanced Mix (Pos & Neg)</option>
+              <option value="Security-First">Security & Permissions Focus</option>
+              <option value="Edge Case Intensive">Deep Boundaries & Errors</option>
+              <option value="UI/UX Heavy">Interaction & Feedback Focus</option>
+            </select>
+          </div>
+
+          <div class="flex flex-col gap-1 col-span-2">
+            <div class="flex justify-between text-3xs text-slate-400 font-semibold uppercase">
+              <span>Target Test Cases Count</span>
+              <span id="caseCountLabel" class="text-indigo-400 font-mono font-bold">8 Cases</span>
+            </div>
+            <input
+              type="range"
+              min="4"
+              max="15"
+              value="8"
+              id="caseCountRange"
+              oninput="document.getElementById('caseCountLabel').innerText = this.value + ' Cases'"
+              class="w-full accent-indigo-500 h-1.5 bg-slate-900 rounded-lg cursor-pointer"
+            />
+          </div>
+        </div>
+
+        <!-- Generate CTA -->
+        <button
+          id="generateBtn"
+          onclick="generateTestCasesAI()"
+          class="w-full py-3 rounded-xl font-semibold text-sm transition flex items-center justify-center gap-2 border shadow-lg bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white border-indigo-500 hover:shadow-indigo-500/10"
+        >
+          <svg class="w-4 h-4 text-indigo-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+          </svg>
+          <span id="generateBtnText">Analyze & Generate Detailed Test Cases</span>
+        </button>
+
+      </div>
+
+      <div class="bg-slate-950 border border-slate-800 rounded-xl p-4 text-xs text-slate-400">
+        <h4 class="font-semibold text-slate-300 mb-2 flex items-center gap-1.5">
+          <span>📖</span> Sequential Breakdown Guide:
+        </h4>
+        <ul class="list-disc pl-4 space-y-1.5 text-3xs">
+          <li><strong class="text-slate-200">1. USE CASE:</strong> Identifies module/feature name.</li>
+          <li><strong class="text-slate-200">2. USER STORY:</strong> Standard user intent ("As an admin, I am able to...").</li>
+          <li><strong class="text-slate-200">3. SCENARIO:</strong> Identifies specific permission context or condition.</li>
+          <li><strong class="text-slate-200">4. ACCEPTANCE CRITERIA (AC):</strong> Given-When-Then rules and validation parameters.</li>
+        </ul>
+      </div>
+
+    </section>
+
+    <!-- Right Column: Interactive Execution Board (7 Columns) -->
+    <section class="lg:col-span-7 flex flex-col gap-6">
+
+      <!-- Metrics Statistics Counters -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div class="bg-slate-950 border border-slate-800 rounded-xl p-3.5 relative">
+          <p class="text-3xs text-slate-500 uppercase font-semibold">Total Cases</p>
+          <p id="statTotal" class="text-xl font-bold font-mono text-slate-200 mt-0.5">0</p>
+          <div class="absolute right-3 top-3.5 bg-slate-900 text-slate-400 p-1 rounded-md text-3xs font-mono">
+            TCs
+          </div>
+        </div>
+
+        <div class="bg-slate-950 border border-slate-800 rounded-xl p-3.5 relative">
+          <p class="text-3xs text-slate-500 uppercase font-semibold">Passed</p>
+          <p id="statPassed" class="text-xl font-bold font-mono text-emerald-400 mt-0.5">0</p>
+          <div class="absolute right-3 top-3.5 bg-emerald-950 text-emerald-400 px-1.5 py-0.5 rounded-md text-3xs font-semibold uppercase">
+            OK
+          </div>
+        </div>
+
+        <div class="bg-slate-950 border border-slate-800 rounded-xl p-3.5 relative">
+          <p class="text-3xs text-slate-500 uppercase font-semibold">Failed</p>
+          <p id="statFailed" class="text-xl font-bold font-mono text-rose-400 mt-0.5">0</p>
+          <div class="absolute right-3 top-3.5 bg-rose-950 text-rose-400 px-1.5 py-0.5 rounded-md text-3xs font-semibold uppercase">
+            Fail
+          </div>
+        </div>
+
+        <div class="bg-slate-950 border border-slate-800 rounded-xl p-3.5 relative">
+          <p class="text-3xs text-slate-500 uppercase font-semibold">Blocked</p>
+          <p id="statBlocked" class="text-xl font-bold font-mono text-amber-500 mt-0.5">0</p>
+          <div class="absolute right-3 top-3.5 bg-amber-950 text-amber-400 px-1.5 py-0.5 rounded-md text-3xs font-semibold uppercase">
+            Block
+          </div>
+        </div>
+      </div>
+
+      <!-- Execution Progress Bar -->
+      <div class="bg-slate-950 border border-slate-800 rounded-xl p-4">
+        <div class="flex justify-between items-center text-2xs mb-2">
+          <div class="flex items-center gap-2">
+            <svg class="w-4 h-4 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"></path>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"></path>
+            </svg>
+            <span class="font-semibold text-slate-300">Run Progress</span>
+          </div>
+          <span id="progressSummary" class="font-mono text-slate-400 text-3xs">
+            0% Complete • Pass Rate: <span class="font-bold text-emerald-400">0%</span>
+          </span>
+        </div>
+
+        <div class="w-full h-3 bg-slate-900 rounded-full flex overflow-hidden" id="progressBarTrack">
+          <div id="progressPassed" style="width: 0%" class="bg-emerald-500 transition-all duration-500"></div>
+          <div id="progressFailed" style="width: 0%" class="bg-rose-500 transition-all duration-500"></div>
+          <div id="progressBlocked" style="width: 0%" class="bg-amber-500 transition-all duration-500"></div>
+          <div id="progressUntested" style="width: 100%" class="bg-slate-800 transition-all duration-500"></div>
+        </div>
+      </div>
+
+      <!-- Execution Board Matrix Container -->
+      <div class="bg-slate-950 border border-slate-800 rounded-xl p-5 flex flex-col gap-4">
+        
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-3 border-b border-slate-900">
+          <div>
+            <h3 class="text-sm font-semibold text-slate-200">Interactive Execution Board</h3>
+            <p class="text-3xs text-slate-500 font-mono mt-0.5">Filter, execute checklist steps, log defects, and export</p>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-1.5">
+            <button
+              onclick="openCreateModal()"
+              class="bg-indigo-600/10 text-indigo-400 border border-indigo-500/20 hover:bg-indigo-600/20 text-2xs font-semibold py-1.5 px-3 rounded-lg transition flex items-center gap-1"
+            >
+              <span>+</span>
+              <span>Add Manual Case</span>
+            </button>
+            <button
+              onclick="exportCSV()"
+              class="bg-emerald-600/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-600/20 text-2xs font-semibold py-1.5 px-3 rounded-lg transition flex items-center gap-1"
+              title="Download spreadsheet report containing numbered steps"
+            >
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+              </svg>
+              Download Excel (CSV)
+            </button>
+            <button
+              onclick="resetAllStatuses()"
+              class="bg-slate-900 text-slate-400 hover:text-slate-200 hover:bg-slate-800 text-2xs font-semibold py-1.5 px-2 rounded-lg transition"
+              title="Reset all statuses to untested"
+            >
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+              </svg>
+            </button>
+            <button
+              onclick="openDeleteConfirm('clear-all')"
+              class="bg-slate-900 text-rose-400 hover:bg-rose-950 hover:text-rose-300 text-2xs font-semibold py-1.5 px-2 rounded-lg transition"
+              title="Clear entire active list"
+            >
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Filters Matrix -->
+        <div class="grid grid-cols-1 sm:grid-cols-4 gap-2 text-2xs">
+          <div class="relative">
+            <span class="absolute left-2.5 top-2 text-slate-600">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+              </svg>
+            </span>
+            <input
+              type="text"
+              id="filterSearchInput"
+              oninput="renderTestCases()"
+              placeholder="Filter cases..."
+              class="w-full bg-slate-900 border border-slate-800 pl-8 pr-3 py-1.5 rounded-lg text-slate-300 placeholder-slate-600 focus:outline-none focus:ring-1 focus:ring-indigo-500 transition"
+            />
+          </div>
+
+          <div class="flex items-center gap-1">
+            <span class="text-3xs text-slate-500 uppercase font-semibold">Priority</span>
+            <select
+              id="filterPrioritySelect"
+              onchange="renderTestCases()"
+              class="flex-grow bg-slate-900 border border-slate-800 rounded-lg py-1 px-1.5 text-slate-300 focus:outline-none"
+            >
+              <option value="All">All Priorities</option>
+              <option value="High">High</option>
+              <option value="Medium">Medium</option>
+              <option value="Low">Low</option>
+            </select>
+          </div>
+
+          <div class="flex items-center gap-1">
+            <span class="text-3xs text-slate-500 uppercase font-semibold">Class</span>
+            <select
+              id="filterCategorySelect"
+              onchange="renderTestCases()"
+              class="flex-grow bg-slate-900 border border-slate-800 rounded-lg py-1 px-1.5 text-slate-300 focus:outline-none"
+            >
+              <option value="All">All Categories</option>
+              <option value="Functional">Functional</option>
+              <option value="Boundary/Edge">Boundary/Edge</option>
+              <option value="UI/UX">UI/UX</option>
+              <option value="Security/API">Security/API</option>
+            </select>
+          </div>
+
+          <div class="flex items-center gap-1">
+            <span class="text-3xs text-slate-500 uppercase font-semibold">State</span>
+            <select
+              id="filterStatusSelect"
+              onchange="renderTestCases()"
+              class="flex-grow bg-slate-900 border border-slate-800 rounded-lg py-1 px-1.5 text-slate-300 focus:outline-none"
+            >
+              <option value="All">All Statuses</option>
+              <option value="Untested">Untested</option>
+              <option value="Pass">Pass</option>
+              <option value="Fail">Fail</option>
+              <option value="Blocked">Blocked</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Test Case Cards Container -->
+        <div id="testCasesContainer" class="flex flex-col gap-3 max-h-[560px] overflow-y-auto pr-1">
+          <!-- Dynamically populated -->
+        </div>
+
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- Delete Confirmation Modal -->
+  <div id="deleteModal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-xl max-w-md w-full p-6 shadow-2xl space-y-4">
+      <div class="flex items-center gap-3 text-rose-400">
+        <div class="p-2 bg-rose-500/15 rounded-lg border border-rose-500/30">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+          </svg>
+        </div>
+        <div>
+          <h3 id="deleteModalTitle" class="text-sm font-bold text-slate-200">Confirm Deletion</h3>
+          <p class="text-3xs text-slate-500 font-mono uppercase mt-0.5">This action is permanent</p>
+        </div>
+      </div>
+
+      <p id="deleteModalBody" class="text-2xs text-slate-400 leading-relaxed"></p>
+
+      <div class="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-800 text-2xs font-semibold">
+        <button
+          onclick="closeDeleteModal()"
+          class="bg-slate-950 text-slate-400 hover:text-white border border-slate-800 py-2 px-4 rounded-lg transition"
+        >
+          Cancel
+        </button>
+        <button
+          id="confirmDeleteBtn"
+          class="bg-rose-600 hover:bg-rose-500 text-white py-2 px-4 rounded-lg transition shadow-md shadow-rose-950"
+        >
+          Yes, Delete
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Manual Case Creation / Editing Modal -->
+  <div id="caseFormModal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-xl max-w-2xl w-full p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+      
+      <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+        <div class="flex items-center gap-2">
+          <svg class="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+          </svg>
+          <h3 id="caseFormModalTitle" class="text-base font-bold text-slate-200">Create Manual Test Case</h3>
+        </div>
+        <button onclick="closeCaseFormModal()" class="text-slate-500 hover:text-white p-1">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+
+      <form id="caseForm" onsubmit="handleCaseFormSubmit(event)" class="space-y-4 text-xs">
+        
+        <div id="formValidationError" class="hidden bg-rose-500/10 border border-rose-500/30 rounded-lg p-3 text-rose-400 text-2xs flex items-center gap-2">
+          <span>⚠️</span>
+          <span id="formValidationMsg">Please complete all required fields.</span>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+          <div class="flex flex-col gap-1">
+            <label class="text-3xs text-slate-400 font-bold uppercase">Test ID</label>
+            <input
+              type="text"
+              id="formCaseId"
+              required
+              class="bg-slate-950 border border-slate-800 rounded-lg p-2 text-slate-200 font-mono focus:outline-none"
+              placeholder="e.g. TC-100"
+            />
+          </div>
+
+          <div class="flex flex-col gap-1 sm:col-span-3">
+            <label class="text-3xs text-slate-400 font-bold uppercase">Case Title *</label>
+            <input
+              type="text"
+              id="formCaseTitle"
+              required
+              class="bg-slate-950 border border-slate-800 rounded-lg p-2 text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              placeholder="Describe verification objective clearly..."
+            />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div class="flex flex-col gap-1">
+            <label class="text-3xs text-slate-400 font-bold uppercase">Category</label>
+            <select
+              id="formCaseCategory"
+              class="bg-slate-950 border border-slate-800 rounded-lg p-2 text-slate-200 focus:outline-none"
+            >
+              <option value="Functional">Functional Assertions</option>
+              <option value="Boundary/Edge">Boundary/Edge Cases</option>
+              <option value="UI/UX">UI/UX Layout & Accessibility</option>
+              <option value="Security/API">Security & Endpoint Testing</option>
+            </select>
+          </div>
+
+          <div class="flex flex-col gap-1">
+            <label class="text-3xs text-slate-400 font-bold uppercase">Priority Level</label>
+            <select
+              id="formCasePriority"
+              class="bg-slate-950 border border-slate-800 rounded-lg p-2 text-slate-200 focus:outline-none"
+            >
+              <option value="High">High (Blocker)</option>
+              <option value="Medium">Medium (Major flow)</option>
+              <option value="Low">Low (Minor flow)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="flex flex-col gap-1">
+          <label class="text-3xs text-slate-400 font-bold uppercase">Coverage Description</label>
+          <textarea
+            id="formCaseDescription"
+            class="bg-slate-950 border border-slate-800 rounded-lg p-2 h-14 text-slate-200 focus:outline-none resize-none"
+            placeholder="Summary of intent, positive/negative assertions, or rules covered..."
+          ></textarea>
+        </div>
+
+        <div class="flex flex-col gap-1">
+          <label class="text-3xs text-slate-400 font-bold uppercase">Preconditions (Optional)</label>
+          <input
+            type="text"
+            id="formCasePreconditions"
+            class="bg-slate-950 border border-slate-800 rounded-lg p-2 text-slate-200 focus:outline-none"
+            placeholder="State prerequisites, required authentication levels, active mock data..."
+          />
+        </div>
+
+        <div class="space-y-1.5">
+          <div class="flex justify-between items-center text-3xs text-slate-400 font-bold uppercase">
+            <span>Execution Steps</span>
+            <button
+              type="button"
+              onclick="addStepField()"
+              class="text-indigo-400 hover:text-indigo-300 flex items-center gap-1 font-semibold"
+            >
+              + Add Step
+            </button>
+          </div>
+          
+          <div id="formStepsContainer" class="space-y-1.5 max-h-[160px] overflow-y-auto pr-1">
+            <!-- Dynamic step rows -->
+          </div>
+        </div>
+
+        <div class="flex flex-col gap-1">
+          <label class="text-3xs text-slate-400 font-bold uppercase">Expected Outcome *</label>
+          <input
+            type="text"
+            id="formCaseExpected"
+            required
+            class="bg-slate-950 border border-slate-800 rounded-lg p-2 text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+            placeholder="The correct system outcome or error message..."
+          />
+        </div>
+
+        <div id="formNotesGroup" class="hidden flex flex-col gap-1">
+          <label class="text-3xs text-slate-400 font-bold uppercase">Run Logs / Defect Notes</label>
+          <input
+            type="text"
+            id="formCaseNotes"
+            class="bg-slate-950 border border-slate-800 rounded-lg p-2 text-slate-200 focus:outline-none"
+            placeholder="Track defect IDs or capture failures..."
+          />
+        </div>
+
+        <div class="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-800 text-2xs font-semibold">
+          <button
+            type="button"
+            onclick="closeCaseFormModal()"
+            class="bg-slate-950 text-slate-400 hover:text-white border border-slate-800 py-2 px-4 rounded-lg transition"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            id="formSubmitBtn"
+            class="bg-indigo-600 hover:bg-indigo-500 text-white py-2 px-5 rounded-lg transition"
+          >
+            Save Case
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="border-t border-slate-800 bg-slate-950/70 py-4 px-6 text-center text-3xs text-slate-500 font-mono tracking-wider mt-auto">
+    APEXQA EXECUTION MODULE • SYSTEM STATUS: ACTIVE • DYNAMIC LOCALSTORE SYNCED
+  </footer>
+
+  <!-- Application Logic -->
+  <script>
+    // Predefined Requirement Templates
+    const REQUIREMENT_TEMPLATES = {
+      soa: {
+        title: "Unconfirmed SOA (Admin Permissions)",
+        content: `1. USE CASE\nModule Access\n\n2. USER STORY\nAs an admin, I am able to access the Unconfirmed SOA module so that I can manage billing data before finalization.\n\n3. SCENARIO\nAdmin Permissions\n\n4. ACCEPTANCE CRITERIA (AC)\nGiven I am logged in to the SBS/Admin Portal\nWhen I attempt to access the 'Unconfirmed SOA' module\nThen I shall only be granted access if my user profile has the required permissions for my assigned building(s)\nAnd the system shall restrict access if my permissions are not granted`
+      },
+      auth: {
+        title: "User Authentication with MFA",
+        content: `1. USE CASE\nUser Authentication & Multi-Factor Security\n\n2. USER STORY\nAs a registered user, I want to log in using my email, password, and a time-based MFA code, so that my personal account and data remain protected against unauthorized access.\n\n3. SCENARIO\nMFA Verification & Failed Attempt Thresholds\n\n4. ACCEPTANCE CRITERIA (AC)\nGiven I have registered credentials with active MFA\nWhen I enter valid credentials and submit my 6-digit TOTP code\nThen I shall be redirected to the dashboard\nAnd the system shall lock the account for 15 minutes after 5 consecutive failed attempts`
+      },
+      cart: {
+        title: "Shopping Cart & Discount Coupons",
+        content: `1. USE CASE\nShopping Cart & Promotional Coupon Rules\n\n2. USER STORY\nAs an online customer, I want to modify item quantities and apply discount codes in my cart, so that I can see accurate price breakdowns before proceeding to payment.\n\n3. SCENARIO\nPromo Code Validation & Discount Calculations\n\n4. ACCEPTANCE CRITERIA (AC)\nGiven I have items in my shopping cart\nWhen I enter promo code 'SAVE20' and apply it\nThen the line-item subtotal shall be discounted by 20%\nAnd if the subtotal is over $50 with 'FREESHIP', shipping shall be set to $0.00`
+      },
+      blank: {
+        title: "Blank 4-Part Requirement Template",
+        content: `1. USE CASE\n[Module / Feature Name]\n\n2. USER STORY\nAs a [user/role], I want to [action/goal], so that [business value/benefit].\n\n3. SCENARIO\n[Scenario Title / Specific Condition]\n\n4. ACCEPTANCE CRITERIA (AC)\nGiven [initial context or state]\nWhen [action or event occurs]\nThen [expected observable outcome]\nAnd [additional conditions or restrictions]`
+      }
+    };
+
+    // Default Seed Data
+    const INITIAL_TEST_CASES = [
+      {
+        id: "TC-001",
+        title: "Positive: Authorized Admin with Valid Building Permissions Accesses Unconfirmed SOA Module",
+        category: "Functional",
+        priority: "High",
+        description: "Verify that an admin user with assigned building permissions successfully gains access to the Unconfirmed SOA module in the SBS/Admin Portal.",
+        preconditions: "Admin account 'admin.assigned@portal.com' is logged into SBS/Admin Portal with 'SOA_MANAGE' permission assigned to Building Block A & B.",
+        steps: [
+          "Log in to the SBS/Admin Portal as 'admin.assigned@portal.com'.",
+          "Navigate to the main portal navigation sidebar.",
+          "Click on the 'Billing & Finance' expandable menu.",
+          "Select the 'Unconfirmed SOA' module option.",
+          "Select assigned building 'Building Block A' from the building selector dropdown.",
+          "Verify that the Unconfirmed SOA table and records populate with billing data."
+        ],
+        expectedResult: "Access is granted immediately without permission warnings. The Unconfirmed SOA grid renders with active management action buttons (Edit, Validate, Finalize).",
+        status: "Pass",
+        notes: "Verified with Building Block A & B assignments."
+      },
+      {
+        id: "TC-002",
+        title: "Negative: Access Restricted for Admin Lacking Module Permissions",
+        category: "Security/API",
+        priority: "High",
+        description: "Verify that the system restricts access to the Unconfirmed SOA module when the admin's profile does not have the required permissions.",
+        preconditions: "Admin account 'unauthorized.admin@portal.com' is active but has 'NO_ACCESS' or viewer-only role for the target building.",
+        steps: [
+          "Log in to the SBS/Admin Portal as 'unauthorized.admin@portal.com'.",
+          "Attempt to navigate directly to the Unconfirmed SOA module via URL: '/modules/unconfirmed-soa'.",
+          "Observe the system response and HTTP network status codes.",
+          "Attempt to click any billing management controls."
+        ],
+        expectedResult: "Access is strictly denied. The system displays a '403 Forbidden - Access Restricted: You do not possess the required permissions for this building module' banner. No sensitive billing records are exposed.",
+        status: "Untested",
+        notes: ""
+      },
+      {
+        id: "TC-003",
+        title: "Boundary/Edge: Unassigned Building Filter Restriction",
+        category: "Boundary/Edge",
+        priority: "Medium",
+        description: "Verify that an admin cannot view or manipulate Unconfirmed SOA records for buildings that are not assigned to their profile.",
+        preconditions: "Admin is assigned exclusively to Building A, but Building C exists in the master database.",
+        steps: [
+          "Log in to the SBS/Admin Portal as an admin assigned solely to Building A.",
+          "Open the 'Unconfirmed SOA' module.",
+          "Inspect the building selection dropdown menu.",
+          "Attempt to manually send an API request with 'buildingId=Building_C' via developer tools: GET /api/v1/soa/unconfirmed?buildingId=C."
+        ],
+        expectedResult: "The building dropdown only lists Building A. The direct API call returns HTTP 403 Forbidden with message: 'Unauthorized building scope'.",
+        status: "Untested",
+        notes: ""
+      },
+      {
+        id: "TC-004",
+        title: "UI/UX: Visual Feedback and Disabled State on Restricted Actions",
+        category: "UI/UX",
+        priority: "Low",
+        description: "Ensure that restricted actions or unconfirmed records display appropriate tooltips and disabled visual styling when permission is missing.",
+        preconditions: "Admin has read-only access to Unconfirmed SOA for Building A.",
+        steps: [
+          "Navigate to the 'Unconfirmed SOA' screen with read-only permissions.",
+          "Hover cursor over the 'Finalize SOA' and 'Edit Billing Entry' action buttons.",
+          "Verify the visual styling of the action buttons and tooltip contents."
+        ],
+        expectedResult: "Action buttons appear grayed out/disabled (opacity 50%) with a lock icon. Hovering displays tooltip: 'Admin permissions required to perform this action'.",
+        status: "Untested",
+        notes: ""
+      }
+    ];
+
+    // State Variables
+    let testCases = [];
+    let expandedCases = {};
+    let stepCheckState = {};
+    let autoStructureOnPaste = true;
+    let isStructuring = false;
+    let isGenerating = false;
+    let modalMode = 'create';
+    let editingCaseId = null;
+    let deleteConfirmTarget = null;
+    let toastTimeout = null;
+
+    // Initialize Application
+    window.onload = function() {
+      try {
+        const saved = localStorage.getItem('apex_test_cases');
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          testCases = Array.isArray(parsed) && parsed.length > 0 ? parsed : INITIAL_TEST_CASES;
+        } else {
+          testCases = INITIAL_TEST_CASES;
+        }
+      } catch (e) {
+        testCases = INITIAL_TEST_CASES;
+      }
+
+      const savedKey = localStorage.getItem('apex_api_key');
+      if (savedKey) {
+        document.getElementById('apiKeyInput').value = savedKey;
+      }
+
+      document.getElementById('apiKeyInput').addEventListener('input', (e) => {
+        localStorage.setItem('apex_api_key', e.target.value);
+      });
+
+      // Default load SOA
+      loadTemplate('soa');
+      renderTestCases();
+    };
+
+    function saveTestCases() {
+      try {
+        localStorage.setItem('apex_test_cases', JSON.stringify(testCases));
+      } catch (e) {
+        console.error("Local storage sync error:", e);
+      }
+      renderTestCases();
+    }
+
+    // Toast Notifications
+    function showToast(msg, isError = false) {
+      const toast = document.getElementById('toastNotification');
+      const icon = document.getElementById('toastIcon');
+      const text = document.getElementById('toastMsg');
+
+      clearTimeout(toastTimeout);
+      text.innerText = msg;
+      
+      if (isError) {
+        toast.className = "fixed top-4 right-4 z-50 transition-all duration-300 px-5 py-3 rounded-xl shadow-2xl flex items-center gap-3 border text-sm font-medium bg-rose-600 text-white border-rose-400 opacity-100 translate-y-0";
+        icon.innerHTML = "⚠️";
+      } else {
+        toast.className = "fixed top-4 right-4 z-50 transition-all duration-300 px-5 py-3 rounded-xl shadow-2xl flex items-center gap-3 border text-sm font-medium bg-emerald-600 text-white border-emerald-400 opacity-100 translate-y-0";
+        icon.innerHTML = "✓";
+      }
+
+      toastTimeout = setTimeout(() => {
+        toast.classList.add('opacity-0', 'translate-y-[-10px]', 'pointer-events-none');
+      }, 4000);
+    }
+
+    // Template Preloaders
+    function loadTemplate(key) {
+      if (REQUIREMENT_TEMPLATES[key]) {
+        document.getElementById('reqTextArea').value = REQUIREMENT_TEMPLATES[key].content;
+        updateCharCount();
+        
+        // Update preset button active styling
+        const buttons = document.querySelectorAll('#templateButtonsGroup button');
+        buttons.forEach(btn => {
+          btn.className = "preset-btn text-3xs px-2.5 py-1.5 rounded-lg border transition font-medium flex items-center gap-1.5 bg-slate-900 text-slate-400 border-slate-800 hover:border-slate-700 hover:text-slate-200";
+        });
+        if (event && event.target) {
+          event.target.className = "preset-btn text-3xs px-2.5 py-1.5 rounded-lg border transition font-medium flex items-center gap-1.5 bg-indigo-600 text-white border-indigo-500 shadow-md";
+        }
+        showToast(`Loaded template: ${REQUIREMENT_TEMPLATES[key].title}`);
+      }
+    }
+
+    function updateCharCount() {
+      const len = document.getElementById('reqTextArea').value.length;
+      document.getElementById('charCountLabel').innerText = `${len} characters`;
+    }
+
+    function toggleAutoStructure() {
+      autoStructureOnPaste = !autoStructureOnPaste;
+      const btn = document.getElementById('toggleAutoStructureBtn');
+      const label = document.getElementById('toggleAutoStructureLabel');
+
+      if (autoStructureOnPaste) {
+        btn.className = "text-3xs px-2 py-0.5 rounded-full border transition flex items-center gap-1 font-mono bg-indigo-950 text-indigo-300 border-indigo-700";
+        label.innerText = "Auto-Structure on Paste: ON";
+      } else {
+        btn.className = "text-3xs px-2 py-0.5 rounded-full border transition flex items-center gap-1 font-mono bg-slate-900 text-slate-500 border-slate-800";
+        label.innerText = "Auto-Structure on Paste: OFF";
+      }
+    }
+
+    // Auto Structuring Logic
+    async function structureRequirementsAI(customText = null) {
+      const textarea = document.getElementById('reqTextArea');
+      const textInput = (typeof customText === 'string' ? customText : textarea.value).trim();
+      if (!textInput) {
+        showToast("Please paste or upload a requirement document first.", true);
+        return;
+      }
+
+      isStructuring = true;
+      document.getElementById('structuringOverlay').classList.remove('hidden');
+      document.getElementById('structuringOverlay').classList.add('flex');
+
+      const systemPrompt = `You are an expert Agile Business Analyst and QA Requirements Architect.
+Analyze the user's raw input or specification and format the exact content into the following 4 sequential sections:
+
+1. USE CASE
+[Extract the Module Name or Feature Title from the input, e.g. "Module Access"]
+
+2. USER STORY
+[Extract the User Story statement, e.g. "As an admin, I am able to access the Unconfirmed SOA module so that I can manage billing data before finalization."]
+
+3. SCENARIO
+[Extract the Scenario name, permission context, or condition title, e.g. "Admin Permissions"]
+
+4. ACCEPTANCE CRITERIA (AC)
+[Extract the exact Acceptance Criteria and Given-When-Then conditions or bulleted rules from the text, preserving the full criteria statements]
+
+CRITICAL RULES:
+- Map the sequence directly from the user's input: 1. USE CASE, 2. USER STORY, 3. SCENARIO, 4. ACCEPTANCE CRITERIA (AC).
+- Automatically separate conjoined text (e.g. "Module AccessAs an admin..." -> 1. USE CASE: Module Access, 2. USER STORY: As an admin...).
+- Maintain user's exact wording, module names, roles, and Given-When-Then criteria.
+- Output clean text with standard numbers. Do NOT wrap in markdown code blocks (\`\`\`) or include conversational text.`;
+
+      const userPrompt = `Inputted requirements to break down into the 4 sections:\n\n${textInput}`;
+      const finalApiKey = document.getElementById('apiKeyInput').value || "";
+      const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${finalApiKey}`;
+
+      const requestPayload = {
+        contents: [{ parts: [{ text: userPrompt }] }],
+        systemInstruction: { parts: [{ text: systemPrompt }] }
+      };
+
+      try {
+        const responseData = await fetchWithBackoff(endpoint, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(requestPayload)
+        });
+
+        const structuredText = responseData.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (!structuredText) throw new Error("Empty response from Gemini API.");
+
+        textarea.value = structuredText.trim();
+        updateCharCount();
+        showToast("Structured into: 1. USE CASE, 2. USER STORY, 3. SCENARIO, 4. AC!");
+      } catch (err) {
+        console.error(err);
+        showToast(`Auto-structuring failed: ${err.message}`, true);
+      } finally {
+        isStructuring = false;
+        document.getElementById('structuringOverlay').classList.add('hidden');
+        document.getElementById('structuringOverlay').classList.remove('flex');
+      }
+    }
+
+    function handlePaste(e) {
+      const pastedData = e.clipboardData?.getData('text');
+      if (pastedData && pastedData.trim().length > 20) {
+        const isAlreadyFormatted = 
+          pastedData.includes("1. USE CASE") && 
+          pastedData.includes("2. USER STORY") && 
+          pastedData.includes("3. SCENARIO") &&
+          pastedData.includes("4. ACCEPTANCE CRITERIA");
+
+        if (autoStructureOnPaste && !isAlreadyFormatted) {
+          e.preventDefault();
+          document.getElementById('reqTextArea').value = pastedData;
+          updateCharCount();
+          structureRequirementsAI(pastedData);
+        }
+      }
+    }
+
+    function handleFileUpload(e) {
+      const file = e.target.files?.[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const content = event.target?.result;
+        if (typeof content === 'string') {
+          document.getElementById('reqTextArea').value = content;
+          updateCharCount();
+          showToast(`Loaded document: ${file.name}`);
+          if (autoStructureOnPaste) {
+            structureRequirementsAI(content);
+          }
+        }
+      };
+      reader.onerror = () => showToast("Failed to read uploaded file.", true);
+      reader.readAsText(file);
+    }
+
+    function handleDragOver(e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+
+    function handleDrop(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      const file = e.dataTransfer.files?.[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          const content = event.target?.result;
+          if (typeof content === 'string') {
+            document.getElementById('reqTextArea').value = content;
+            updateCharCount();
+            showToast(`Dropped document: ${file.name}`);
+            if (autoStructureOnPaste) {
+              structureRequirementsAI(content);
+            }
+          }
+        };
+        reader.readAsText(file);
+      }
+    }
+
+    // AI Test Case Generator
+    async function generateTestCasesAI() {
+      const reqText = document.getElementById('reqTextArea').value.trim();
+      if (!reqText) {
+        showToast("Please enter feature requirements or user stories first.", true);
+        return;
+      }
+
+      const persona = document.getElementById('personaSelect').value;
+      const focusCategory = document.getElementById('focusStrategySelect').value;
+      const caseCount = parseInt(document.getElementById('caseCountRange').value, 10);
+
+      isGenerating = true;
+      const genBtn = document.getElementById('generateBtn');
+      const genBtnText = document.getElementById('generateBtnText');
+      genBtn.disabled = true;
+      genBtn.classList.add('opacity-70', 'cursor-not-allowed');
+      genBtnText.innerText = "Synthesizing Detailed Positive & Negative Cases...";
+
+      const systemPrompt = `You are a ${persona} specialized in agile assurance, software test architecture, and detailed manual execution test creation.
+Analyze the user's provided 4-part requirements (Use Case, User Story, Scenario, Acceptance Criteria) and Given-When-Then conditions.
+
+Your objective is to generate exactly ${caseCount} highly detailed, production-grade test cases.
+Generate a comprehensive breakdown covering:
+- POSITIVE SCENARIOS: Happy path flows where permissions are granted, actions succeed, and data is managed properly.
+- NEGATIVE SCENARIOS: Access restriction, missing permissions, unauthorized building attempts, session timeouts, and security blocks.
+- BOUNDARY / EDGE SCENARIOS: Building scope boundaries, unassigned entities, null inputs, and concurrent state changes.
+- UI/UX SCENARIOS: Disabled states, visual permission feedback, tooltips, and navigation cues.
+
+Focus Strategy: ${focusCategory}
+
+CRITICAL QUALITY RULES:
+1. DETAILED ACTION STEPS: Every test case MUST include 5 to 10 sequential, actionable execution steps with explicit UI elements, sample data, and button names.
+2. EXHAUSTIVE PRECONDITIONS: Clearly state user roles, assigned building scopes, permissions, and initial portal states.
+3. PRECISE EXPECTED RESULTS: Detail observable outcomes, UI messages, restricted banners, status codes, and data states.
+
+You MUST respond strictly with a valid JSON document conforming to this exact schema without markdown wrap.
+
+JSON Schema:
+{
+  "test_cases": [
+    {
+      "id": "TC-XYZ",
+      "title": "Comprehensive title indicating goal and path type (Positive or Negative)",
+      "category": "Functional" | "Boundary/Edge" | "UI/UX" | "Security/API",
+      "priority": "High" | "Medium" | "Low",
+      "description": "Detailed summary of test scope, positive/negative intent, and business logic covered",
+      "preconditions": "Full prerequisite setup, active roles, and mock data context",
+      "steps": [
+        "Step 1 instruction with explicit UI element and sample data",
+        "Step 2 instruction...",
+        "Step 3 instruction..."
+      ],
+      "expected_result": "Detailed observable success/failure state, visual UI response, and data persistence state"
+    }
+  ]
+}`;
+
+      const userPrompt = `Specification to analyze:\n\n${reqText}\n\nPlease generate exactly ${caseCount} detailed test cases covering both Positive and Negative scenarios starting sequentially from TC-${String(testCases.length + 1).padStart(3, '0')}.`;
+      const finalApiKey = document.getElementById('apiKeyInput').value || "";
+      const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${finalApiKey}`;
+
+      const requestPayload = {
+        contents: [{ parts: [{ text: userPrompt }] }],
+        systemInstruction: { parts: [{ text: systemPrompt }] },
+        generationConfig: {
+          responseMimeType: "application/json",
+          responseSchema: {
+            type: "OBJECT",
+            properties: {
+              test_cases: {
+                type: "ARRAY",
+                items: {
+                  type: "OBJECT",
+                  properties: {
+                    id: { type: "STRING" },
+                    title: { type: "STRING" },
+                    category: { type: "STRING", enum: ["Functional", "Boundary/Edge", "UI/UX", "Security/API"] },
+                    priority: { type: "STRING", enum: ["High", "Medium", "Low"] },
+                    description: { type: "STRING" },
+                    preconditions: { type: "STRING" },
+                    steps: {
+                      type: "ARRAY",
+                      items: { type: "STRING" }
+                    },
+                    expected_result: { type: "STRING" }
+                  },
+                  required: ["id", "title", "category", "priority", "description", "preconditions", "steps", "expected_result"]
+                }
+              }
+            },
+            required: ["test_cases"]
+          }
+        }
+      };
+
+      try {
+        const responseData = await fetchWithBackoff(endpoint, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(requestPayload)
+        });
+
+        const rawJsonText = responseData.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (!rawJsonText) throw new Error("Empty response from Gemini API.");
+
+        const parsed = JSON.parse(rawJsonText);
+        if (parsed && Array.isArray(parsed.test_cases)) {
+          const generatedCases = parsed.test_cases.map((tc, index) => ({
+            id: `TC-${String(testCases.length + index + 1).padStart(3, '0')}`,
+            title: tc.title || '',
+            category: tc.category || 'Functional',
+            priority: tc.priority || 'Medium',
+            description: tc.description || '',
+            preconditions: tc.preconditions || '',
+            steps: Array.isArray(tc.steps) ? tc.steps : ['Perform validation steps.'],
+            expectedResult: tc.expected_result || tc.expectedResult || '',
+            status: 'Untested',
+            notes: ''
+          }));
+
+          testCases = [...testCases, ...generatedCases];
+          saveTestCases();
+          showToast(`Successfully generated ${generatedCases.length} detailed test cases!`);
+        }
+      } catch (err) {
+        console.error(err);
+        showToast(`Generation failed: ${err.message}`, true);
+      } finally {
+        isGenerating = false;
+        genBtn.disabled = false;
+        genBtn.classList.remove('opacity-70', 'cursor-not-allowed');
+        genBtnText.innerText = "Analyze & Generate Detailed Test Cases";
+      }
+    }
+
+    async function fetchWithBackoff(url, options, retries = 5, delay = 1000) {
+      try {
+        const response = await fetch(url, options);
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.error?.message || `HTTP ${response.status}`);
+        }
+        return await response.json();
+      } catch (error) {
+        if (retries <= 1) throw error;
+        await new Promise(resolve => setTimeout(resolve, delay));
+        return fetchWithBackoff(url, options, retries - 1, delay * 2);
+      }
+    }
+
+    // Render Function
+    function renderTestCases() {
+      const searchQuery = document.getElementById('filterSearchInput').value.toLowerCase();
+      const filterPriority = document.getElementById('filterPrioritySelect').value;
+      const filterCategory = document.getElementById('filterCategorySelect').value;
+      const filterStatus = document.getElementById('filterStatusSelect').value;
+
+      const filtered = testCases.filter(tc => {
+        if (!tc) return false;
+        const matchesSearch = 
+          (tc.title || '').toLowerCase().includes(searchQuery) ||
+          (tc.id || '').toLowerCase().includes(searchQuery) ||
+          (tc.description || '').toLowerCase().includes(searchQuery);
+
+        const matchesPriority = filterPriority === 'All' || tc.priority === filterPriority;
+        const matchesCategory = filterCategory === 'All' || tc.category === filterCategory;
+        const matchesStatus = filterStatus === 'All' || tc.status === filterStatus;
+
+        return matchesSearch && matchesPriority && matchesCategory && matchesStatus;
+      });
+
+      // Update Statistics
+      const total = testCases.length;
+      const passed = testCases.filter(t => t.status === 'Pass').length;
+      const failed = testCases.filter(t => t.status === 'Fail').length;
+      const blocked = testCases.filter(t => t.status === 'Blocked').length;
+      const untested = total - (passed + failed + blocked);
+      const executed = passed + failed + blocked;
+      const passRate = executed > 0 ? Math.round((passed / executed) * 100) : 0;
+      const completionRate = total > 0 ? Math.round((executed / total) * 100) : 0;
+
+      document.getElementById('statTotal').innerText = total;
+      document.getElementById('statPassed').innerText = passed;
+      document.getElementById('statFailed').innerText = failed;
+      document.getElementById('statBlocked').innerText = blocked;
+
+      document.getElementById('progressSummary').innerHTML = 
+        `${completionRate}% Complete • Pass Rate: <span class="font-bold text-emerald-400">${passRate}%</span>`;
+
+      if (total > 0) {
+        document.getElementById('progressPassed').style.width = `${(passed / total) * 100}%`;
+        document.getElementById('progressFailed').style.width = `${(failed / total) * 100}%`;
+        document.getElementById('progressBlocked').style.width = `${(blocked / total) * 100}%`;
+        document.getElementById('progressUntested').style.width = `${(untested / total) * 100}%`;
+      } else {
+        document.getElementById('progressPassed').style.width = '0%';
+        document.getElementById('progressFailed').style.width = '0%';
+        document.getElementById('progressBlocked').style.width = '0%';
+        document.getElementById('progressUntested').style.width = '100%';
+      }
+
+      // Render Cards
+      const container = document.getElementById('testCasesContainer');
+      if (filtered.length === 0) {
+        container.innerHTML = `
+          <div class="text-center py-10 bg-slate-900/40 rounded-xl border border-dashed border-slate-800 flex flex-col items-center gap-2">
+            <span class="text-3xl">⚙️</span>
+            <p class="text-xs text-slate-400">No test cases matching active criteria.</p>
+            <button onclick="resetFilters()" class="text-2xs text-indigo-400 hover:underline font-semibold mt-1">
+              Reset Active Filters
+            </button>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = filtered.map(tc => {
+        const isExpanded = !!expandedCases[tc.id];
+        const stepsChecked = stepCheckState[tc.id] || [];
+        const checkedCount = stepsChecked.filter(Boolean).length;
+        const progressPct = tc.steps && tc.steps.length > 0 ? Math.round((checkedCount / tc.steps.length) * 100) : 0;
+
+        let statusBg = 'bg-slate-900 text-slate-400 border-slate-800';
+        let cardBorderColor = 'hover:border-slate-800';
+        if (tc.status === 'Pass') {
+          statusBg = 'bg-emerald-950/80 text-emerald-400 border-emerald-800/60';
+          cardBorderColor = 'border-emerald-900/40 bg-slate-950/70 hover:border-emerald-800/80';
+        } else if (tc.status === 'Fail') {
+          statusBg = 'bg-rose-950/80 text-rose-400 border-rose-800/60';
+          cardBorderColor = 'border-rose-900/40 bg-slate-950/70 hover:border-rose-800/80';
+        } else if (tc.status === 'Blocked') {
+          statusBg = 'bg-amber-950/80 text-amber-500 border-amber-800/60';
+          cardBorderColor = 'border-amber-900/40 bg-slate-950/70 hover:border-amber-800/80';
+        }
+
+        let priorityBadge = 'bg-slate-900 text-slate-400';
+        if (tc.priority === 'High') priorityBadge = 'bg-rose-950 text-rose-300 border border-rose-800/30';
+        else if (tc.priority === 'Medium') priorityBadge = 'bg-amber-950 text-amber-300 border border-amber-800/30';
+        else if (tc.priority === 'Low') priorityBadge = 'bg-slate-800 text-slate-300 border border-slate-700/30';
+
+        let categoryBadge = 'bg-slate-800 text-slate-300';
+        if (tc.category === 'Security/API') categoryBadge = 'bg-red-950/60 text-red-300 border border-red-800/20';
+        else if (tc.category === 'Boundary/Edge') categoryBadge = 'bg-purple-950/60 text-purple-300 border border-purple-800/20';
+        else if (tc.category === 'UI/UX') categoryBadge = 'bg-teal-950/60 text-teal-300 border border-teal-800/20';
+        else if (tc.category === 'Functional') categoryBadge = 'bg-indigo-950/60 text-indigo-300 border border-indigo-800/20';
+
+        const displayExpected = tc.expectedResult || tc.expected_result || "";
+
+        return `
+          <div class="border border-slate-900 rounded-xl bg-slate-950/40 transition duration-150 relative group ${cardBorderColor}">
+            <div class="p-4 flex items-start gap-3">
+              
+              <div class="flex-shrink-0 mt-0.5">
+                <button onclick="toggleCaseExpand('${tc.id}')" class="p-1 bg-slate-900 hover:bg-slate-800 rounded-md text-slate-400 hover:text-white transition">
+                  ${isExpanded ? '▲' : '▼'}
+                </button>
+              </div>
+
+              <div class="flex-grow space-y-1.5 cursor-pointer" onclick="toggleCaseExpand('${tc.id}')">
+                <div class="flex flex-wrap items-center gap-1.5">
+                  <span class="text-3xs font-mono font-bold bg-slate-900 text-indigo-400 px-2 py-0.5 rounded border border-slate-800">
+                    ${tc.id}
+                  </span>
+                  <span class="text-3xs px-2 py-0.5 rounded font-semibold uppercase tracking-wider ${categoryBadge}">
+                    ${tc.category}
+                  </span>
+                  <span class="text-3xs px-2 py-0.5 rounded font-semibold uppercase tracking-wider ${priorityBadge}">
+                    ${tc.priority}
+                  </span>
+                  ${tc.steps && tc.steps.length > 0 && checkedCount > 0 ? `
+                    <span class="text-3xs bg-slate-900 text-slate-400 px-2 py-0.5 rounded font-mono">
+                      Checklist: ${checkedCount}/${tc.steps.length} (${progressPct}%)
+                    </span>
+                  ` : ''}
+                </div>
+
+                <h4 class="text-xs sm:text-sm font-semibold text-slate-200 group-hover:text-white transition">
+                  ${tc.title}
+                </h4>
+                <p class="text-2xs text-slate-400 line-clamp-2 leading-relaxed">
+                  ${tc.description}
+                </p>
+              </div>
+
+              <div class="flex flex-col items-end gap-1.5 flex-shrink-0">
+                <div class="text-3xs px-2 py-1 rounded-md font-bold uppercase tracking-wider border ${statusBg}">
+                  ${tc.status}
+                </div>
+                <div class="flex items-center gap-1 opacity-80 group-hover:opacity-100 transition">
+                  <button onclick="setCaseStatus('${tc.id}', 'Pass')" class="p-1.5 bg-emerald-950 hover:bg-emerald-900 rounded-md text-emerald-400 border border-emerald-900 transition" title="Set Pass">
+                    ✓
+                  </button>
+                  <button onclick="setCaseStatus('${tc.id}', 'Fail')" class="p-1.5 bg-rose-950 hover:bg-rose-900 rounded-md text-rose-400 border border-rose-900 transition" title="Set Fail">
+                    ✕
+                  </button>
+                  <button onclick="setCaseStatus('${tc.id}', 'Blocked')" class="p-1.5 bg-amber-950 hover:bg-amber-900 rounded-md text-amber-400 border border-amber-900 transition" title="Set Blocked">
+                    !
+                  </button>
+                  <button onclick="openDeleteConfirm('${tc.id}', '${encodeURIComponent(tc.title)}')" class="p-1.5 bg-slate-900 hover:bg-rose-950 hover:text-rose-400 rounded-md text-slate-500 border border-slate-800 hover:border-rose-900 transition ml-1" title="Delete Case">
+                    🗑️
+                  </button>
+                </div>
+              </div>
+
+            </div>
+
+            ${isExpanded ? `
+              <div class="border-t border-slate-900 bg-slate-950/90 p-4 rounded-b-xl space-y-4">
+                ${tc.preconditions ? `
+                  <div class="space-y-1">
+                    <span class="text-3xs text-slate-500 font-bold uppercase tracking-wider">Preconditions</span>
+                    <div class="bg-slate-900/60 border border-slate-800/40 rounded-lg p-2.5 text-2xs text-slate-300 leading-relaxed font-sans">
+                      ${tc.preconditions}
+                    </div>
+                  </div>
+                ` : ''}
+
+                <div class="space-y-1.5">
+                  <span class="text-3xs text-slate-500 font-bold uppercase tracking-wider">Execution Step Checklist</span>
+                  <div class="bg-slate-900/60 border border-slate-800/40 rounded-lg p-1 divide-y divide-slate-800">
+                    ${(tc.steps || []).map((step, idx) => {
+                      const isChecked = !!stepsChecked[idx];
+                      return `
+                        <div class="flex items-start gap-2.5 py-2 px-2.5 hover:bg-slate-900/90 transition">
+                          <button onclick="toggleStepCheck('${tc.id}', ${idx})" class="mt-0.5 w-4 h-4 rounded border flex items-center justify-center transition flex-shrink-0 ${isChecked ? 'bg-indigo-600 border-indigo-500 text-white font-bold text-2xs' : 'bg-slate-950 border-slate-700 text-transparent hover:border-slate-500'}">
+                            ✓
+                          </button>
+                          <span class="text-2xs leading-relaxed ${isChecked ? 'text-slate-500 line-through' : 'text-slate-300'}">
+                            <strong class="text-indigo-400 font-mono mr-1">${idx + 1}.</strong> ${step}
+                          </span>
+                        </div>
+                      `;
+                    }).join('')}
+                  </div>
+                </div>
+
+                <div class="space-y-1">
+                  <span class="text-3xs text-slate-500 font-bold uppercase tracking-wider">Expected System Outcome</span>
+                  <div class="bg-slate-900/80 border border-slate-800/40 rounded-lg p-2.5 text-2xs text-emerald-400 font-medium leading-relaxed">
+                    ${displayExpected}
+                  </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-end pt-3 border-t border-slate-900">
+                  <div class="space-y-1">
+                    <label class="text-3xs text-slate-500 font-bold uppercase tracking-wider">Execution Logs / Defect Notes</label>
+                    <input
+                      type="text"
+                      placeholder="Log defect IDs, error responses, or test details..."
+                      value="${tc.notes || ''}"
+                      oninput="updateCaseNotes('${tc.id}', this.value)"
+                      class="w-full bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5 text-2xs text-slate-200 placeholder-slate-600 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                    />
+                  </div>
+
+                  <div class="flex items-center justify-end gap-2 text-2xs font-semibold">
+                    <button onclick="openEditModal('${tc.id}')" class="bg-slate-900 text-slate-300 hover:text-white border border-slate-800 hover:bg-slate-800 py-1.5 px-2.5 rounded-lg transition flex items-center gap-1">
+                      ✏️ Edit Case
+                    </button>
+                    <button onclick="openDeleteConfirm('${tc.id}', '${encodeURIComponent(tc.title)}')" class="bg-slate-900 text-rose-400 hover:bg-rose-950/40 border border-slate-800 hover:border-rose-900/30 py-1.5 px-2.5 rounded-lg transition flex items-center gap-1">
+                      🗑️ Delete
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ` : ''}
+          </div>
+        `;
+      }).join('');
+    }
+
+    function toggleCaseExpand(id) {
+      expandedCases[id] = !expandedCases[id];
+      renderTestCases();
+    }
+
+    function toggleStepCheck(caseId, stepIdx) {
+      if (!stepCheckState[caseId]) stepCheckState[caseId] = [];
+      stepCheckState[caseId][stepIdx] = !stepCheckState[caseId][stepIdx];
+      renderTestCases();
+    }
+
+    function setCaseStatus(id, newStatus) {
+      testCases = testCases.map(tc => tc.id === id ? { ...tc, status: newStatus } : tc);
+      saveTestCases();
+    }
+
+    function updateCaseNotes(id, val) {
+      testCases = testCases.map(tc => tc.id === id ? { ...tc, notes: val } : tc);
+      localStorage.setItem('apex_test_cases', JSON.stringify(testCases));
+    }
+
+    function resetAllStatuses() {
+      testCases = testCases.map(tc => ({ ...tc, status: 'Untested' }));
+      stepCheckState = {};
+      saveTestCases();
+      showToast("Reset all statuses to 'Untested'.");
+    }
+
+    function resetFilters() {
+      document.getElementById('filterSearchInput').value = '';
+      document.getElementById('filterPrioritySelect').value = 'All';
+      document.getElementById('filterCategorySelect').value = 'All';
+      document.getElementById('filterStatusSelect').value = 'All';
+      renderTestCases();
+    }
+
+    // CSV Export with Numbered Steps
+    function exportCSV() {
+      if (testCases.length === 0) {
+        showToast("No test cases available to export.", true);
+        return;
+      }
+
+      const headers = ["ID", "Title", "Category", "Priority", "Description", "Preconditions", "Steps", "Expected Result", "Execution Status", "Execution Notes"];
+      
+      const rows = testCases.map(tc => {
+        const numberedSteps = Array.isArray(tc.steps)
+          ? tc.steps.map((step, idx) => `${idx + 1}. ${step}`).join("\n")
+          : String(tc.steps || "");
+
+        return [
+          tc.id || "",
+          tc.title || "",
+          tc.category || "",
+          tc.priority || "",
+          tc.description || "",
+          tc.preconditions || "",
+          numberedSteps,
+          tc.expectedResult || tc.expected_result || "",
+          tc.status || "Untested",
+          tc.notes || ""
+        ];
+      });
+
+      const csvContent = [headers, ...rows].map(row => 
+        row.map(value => {
+          const escaped = String(value ?? '').replace(/"/g, '""');
+          return `"${escaped}"`;
+        }).join(",")
+      ).join("\r\n");
+
+      try {
+        const blob = new Blob(["\uFEFF" + csvContent], { type: "text/csv;charset=utf-8;" });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.setAttribute("href", url);
+        link.setAttribute("download", `apex_qa_test_suite_${new Date().toISOString().split('T')[0]}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+        showToast(`Successfully exported ${testCases.length} test cases with numbered steps!`);
+      } catch (e) {
+        showToast("Failed to build CSV download file.", true);
+        console.error(e);
+      }
+    }
+
+    // Modal Helpers
+    function generateNewId() {
+      let nextNum = testCases.length + 1;
+      let candidate = `TC-${String(nextNum).padStart(3, '0')}`;
+      while (testCases.some(tc => tc && tc.id === candidate)) {
+        nextNum++;
+        candidate = `TC-${String(nextNum).padStart(3, '0')}`;
+      }
+      return candidate;
+    }
+
+    function openCreateModal() {
+      modalMode = 'create';
+      editingCaseId = null;
+      document.getElementById('caseFormModalTitle').innerText = "Create Manual Test Case";
+      document.getElementById('formCaseId').value = generateNewId();
+      document.getElementById('formCaseTitle').value = "";
+      document.getElementById('formCaseCategory').value = "Functional";
+      document.getElementById('formCasePriority').value = "Medium";
+      document.getElementById('formCaseDescription').value = "";
+      document.getElementById('formCasePreconditions').value = "";
+      document.getElementById('formCaseExpected').value = "";
+      document.getElementById('formCaseNotes').value = "";
+      document.getElementById('formNotesGroup').classList.add('hidden');
+      document.getElementById('formValidationError').classList.add('hidden');
+
+      renderStepFields(['']);
+      document.getElementById('caseFormModal').classList.remove('hidden');
+    }
+
+    function openEditModal(id) {
+      modalMode = 'edit';
+      editingCaseId = id;
+      const tc = testCases.find(t => t.id === id);
+      if (!tc) return;
+
+      document.getElementById('caseFormModalTitle').innerText = `Edit Test Case ${tc.id}`;
+      document.getElementById('formCaseId').value = tc.id;
+      document.getElementById('formCaseTitle').value = tc.title || "";
+      document.getElementById('formCaseCategory').value = tc.category || "Functional";
+      document.getElementById('formCasePriority').value = tc.priority || "Medium";
+      document.getElementById('formCaseDescription').value = tc.description || "";
+      document.getElementById('formCasePreconditions').value = tc.preconditions || "";
+      document.getElementById('formCaseExpected').value = tc.expectedResult || tc.expected_result || "";
+      document.getElementById('formCaseNotes').value = tc.notes || "";
+      document.getElementById('formNotesGroup').classList.remove('hidden');
+      document.getElementById('formValidationError').classList.add('hidden');
+
+      renderStepFields(tc.steps && tc.steps.length > 0 ? tc.steps : ['']);
+      document.getElementById('caseFormModal').classList.remove('hidden');
+    }
+
+    function closeCaseFormModal() {
+      document.getElementById('caseFormModal').classList.add('hidden');
+    }
+
+    function renderStepFields(stepsArray) {
+      const container = document.getElementById('formStepsContainer');
+      container.innerHTML = stepsArray.map((step, idx) => `
+        <div class="flex items-center gap-2 step-row">
+          <span class="font-mono text-slate-500 font-bold w-4">${idx + 1}.</span>
+          <input
+            type="text"
+            value="${step.replace(/"/g, '&quot;')}"
+            class="flex-grow bg-slate-950 border border-slate-800 rounded-lg p-1.5 text-slate-200 focus:outline-none step-input"
+            placeholder="Step instruction detail..."
+          />
+          <button
+            type="button"
+            onclick="removeStepField(this)"
+            class="text-rose-500 hover:text-rose-400 p-1"
+          >
+            ✕
+          </button>
+        </div>
+      `).join('');
+    }
+
+    function addStepField() {
+      const container = document.getElementById('formStepsContainer');
+      const count = container.querySelectorAll('.step-row').length + 1;
+      const div = document.createElement('div');
+      div.className = "flex items-center gap-2 step-row";
+      div.innerHTML = `
+        <span class="font-mono text-slate-500 font-bold w-4">${count}.</span>
+        <input
+          type="text"
+          class="flex-grow bg-slate-950 border border-slate-800 rounded-lg p-1.5 text-slate-200 focus:outline-none step-input"
+          placeholder="Step instruction detail..."
+        />
+        <button
+          type="button"
+          onclick="removeStepField(this)"
+          class="text-rose-500 hover:text-rose-400 p-1"
+        >
+          ✕
+        </button>
+      `;
+      container.appendChild(div);
+    }
+
+    function removeStepField(btn) {
+      const container = document.getElementById('formStepsContainer');
+      if (container.querySelectorAll('.step-row').length > 1) {
+        btn.closest('.step-row').remove();
+        // renumber
+        container.querySelectorAll('.step-row').forEach((row, i) => {
+          row.querySelector('span').innerText = `${i + 1}.`;
+        });
+      }
+    }
+
+    function handleCaseFormSubmit(e) {
+      e.preventDefault();
+      const title = document.getElementById('formCaseTitle').value.trim();
+      const expected = document.getElementById('formCaseExpected').value.trim();
+
+      if (!title || !expected) {
+        document.getElementById('formValidationError').classList.remove('hidden');
+        return;
+      }
+
+      const stepInputs = document.querySelectorAll('.step-input');
+      const steps = Array.from(stepInputs).map(inp => inp.value.trim()).filter(Boolean);
+
+      const caseObj = {
+        id: document.getElementById('formCaseId').value.trim(),
+        title: title,
+        category: document.getElementById('formCaseCategory').value,
+        priority: document.getElementById('formCasePriority').value,
+        description: document.getElementById('formCaseDescription').value.trim(),
+        preconditions: document.getElementById('formCasePreconditions').value.trim(),
+        steps: steps.length > 0 ? steps : ['Perform validation steps.'],
+        expectedResult: expected,
+        notes: document.getElementById('formCaseNotes').value.trim(),
+        status: modalMode === 'edit' ? (testCases.find(t => t.id === editingCaseId)?.status || 'Untested') : 'Untested'
+      };
+
+      if (modalMode === 'create') {
+        testCases.push(caseObj);
+        showToast(`Created test case ${caseObj.id}`);
+      } else {
+        testCases = testCases.map(tc => tc.id === editingCaseId ? caseObj : tc);
+        showToast(`Updated test case ${caseObj.id}`);
+      }
+
+      saveTestCases();
+      closeCaseFormModal();
+    }
+
+    // Delete Confirmation Flow
+    function openDeleteConfirm(target, encodedTitle = '') {
+      deleteConfirmTarget = target;
+      const modal = document.getElementById('deleteModal');
+      const titleEl = document.getElementById('deleteModalTitle');
+      const bodyEl = document.getElementById('deleteModalBody');
+      const confirmBtn = document.getElementById('confirmDeleteBtn');
+
+      if (target === 'clear-all') {
+        titleEl.innerText = "Clear Entire Test Suite?";
+        bodyEl.innerText = "Are you sure you want to delete all current test cases in your active suite? You will lose any checklist progress and execution notes.";
+      } else {
+        const decodedTitle = decodeURIComponent(encodedTitle);
+        titleEl.innerText = "Confirm Test Case Deletion";
+        bodyEl.innerHTML = `Are you sure you want to delete test case <span class="font-mono text-indigo-400 font-bold bg-slate-950 px-1.5 py-0.5 rounded border border-slate-800">${target}</span>?<br/><br/><span class="text-slate-300 italic">"${decodedTitle}"</span>`;
+      }
+
+      confirmBtn.onclick = () => {
+        if (deleteConfirmTarget === 'clear-all') {
+          testCases = [];
+          stepCheckState = {};
+          saveTestCases();
+          showToast("Cleared entire test suite.");
+        } else {
+          testCases = testCases.filter(tc => tc.id !== deleteConfirmTarget);
+          saveTestCases();
+          showToast(`Deleted test case ${deleteConfirmTarget}`);
+        }
+        closeDeleteModal();
+      };
+
+      modal.classList.remove('hidden');
+    }
+
+    function closeDeleteModal() {
+      document.getElementById('deleteModal').classList.add('hidden');
+    }
+  </script>
+</body>
+</html>
